@@ -4,6 +4,7 @@ import Register from "./features/auth/pages/Register.jsx";
 import Protected from "./features/auth/components/Protected.jsx";
 import { useNavigate } from "react-router";
 import Home from "./features/interview/pages/Home.jsx";
+import Interview from "./features/interview/pages/Interview.jsx";
 
 export const router = createBrowserRouter([
     {
@@ -20,6 +21,6 @@ export const router = createBrowserRouter([
     },
     {
         path: "/interview/:interviewId",
-        element: <Protected></Protected>
+        element: <Protected><Interview /></Protected>
     }
 ])

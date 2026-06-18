@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import "../style/home.scss";
+import { useInterview } from "../hooks/useInterview";
+import { useNavigate } from "react-router";
 
 import {
   FileText,
@@ -10,9 +12,36 @@ import {
 } from "lucide-react";
 
 const Home = () => {
+
+  const { loading, generateReport } = useInterview()
+
   const [jobDescription, setJobDescription] = useState("");
-  const [resume, setResume] = useState(null);
+  // const [resume, setResume] = useState(null);
   const [selfDescription, setSelfDescription] = useState("");
+  const resumeInputRef = useRef()
+
+  const navigate = useNavigate()
+  const handleGenerateReport = async () => {
+    const resumeFile = resumeInputRef.current?.files?.[0];
+    if (!jobDescription.trim()) {
+        alert("Job Description is required");
+        return;
+    }
+
+    if (!resumeFile && !selfDescription.trim()) {
+        alert(
+            "Please upload a resume or provide a self description."
+        );
+        return;
+    }
+
+    const data = await generateReport({
+        jobDescription,
+        selfDescription,
+        resumeFile
+    });
+    navigate(`/interview/${data._id}`)
+  }
 
   return (
     <main className="home">
@@ -98,18 +127,19 @@ e.g. "Senior Frontend Engineer at Google requires proficiency in React, TypeScri
                 type="file"
                 id="resume"
                 accept=".pdf,.docx"
-                onChange={(e) =>
-                  setResume(
-                    e.target.files?.[0] || null
-                  )
-                }
+                ref={resumeInputRef}
+                // onChange={(e) =>
+                //   setResume(
+                //     e.target.files?.[0] || null
+                //   )
+                // }
               />
 
-              {resume && (
+              {/* {resume && (
                 <p className="file-selected">
                   ✓ {resume.name}
                 </p>
-              )}
+              )} */}
             </div>
 
             <div className="divider">
@@ -146,9 +176,15 @@ e.g. "Senior Frontend Engineer at Google requires proficiency in React, TypeScri
               </span>
             </div>
 
-            <button className="primary-button">
+            <button 
+            className="primary-button"
+            onClick={handleGenerateReport}
+            disabled={loading}
+            >
               <Sparkles size={18} />
-              Generate My Interview Strategy
+              {loading? "Generating...": "Generate My Interview Strategy"}
+
+              {/* Generate My Interview Strategy */}
             </button>
 
           </div>

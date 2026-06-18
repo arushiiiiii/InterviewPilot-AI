@@ -36,7 +36,10 @@ const interviewReportSchema = z.object({
         day: z.number().describe("The day number in the preparation plan, starting from 1"),
         focus: z.string().describe("The main focus of this day in the preparation plan, e.g. data structures, system design, mock interviews etc."),
         tasks: z.array(z.string()).describe("List of tasks to be done on this day to follow the preparation plan, e.g. read a specific book, complete a certain topic or complete any lecture etc"),
-    })).length(7).describe("A day-wise preparation plan for the candidate to follow in order to prepare for the interview effectively")
+    })).length(7).describe("A day-wise preparation plan for the candidate to follow in order to prepare for the interview effectively"),
+    title: z.string().describe("The title of the job for which the interview report is generated"),
+    
+
 });
 async function generateInterviewReport({resume, selfDescription, jobDescription}) {
 
@@ -44,6 +47,7 @@ async function generateInterviewReport({resume, selfDescription, jobDescription}
     Return JSON in EXACTLY the following format:
 
 {
+  "title": string,
   "matchScore": number,
   "technicalQuestions": [
     {
@@ -122,6 +126,15 @@ ${jobDescription}
 ==================================================
 REPORT REQUIREMENTS
 ===================
+
+TITLE:
+
+* Extract the most appropriate job title from the job description.
+* Examples:
+  - Frontend Developer
+  - Software Engineer Intern
+  - Backend Engineer
+  - Full Stack Developer
 
 MATCH SCORE:
 
@@ -225,10 +238,10 @@ QUALITY EXPECTATIONS:
     })
 
     const report = JSON.parse(response.text);
-    console.log(report)
-    // const validatedReport = interviewReportSchema.parse(report);
-    // return validatedReport
-    return report
+    const validatedReport = interviewReportSchema.parse(report);
+    return validatedReport
+    // console.log(validateReport);
+    // return report
     
 } 
 
