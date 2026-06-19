@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../style/interview.scss";
 import { useInterview } from "../hooks/useInterview";
-
+import { useNavigate, useParams } from "react-router";
 import {
   Code2,
   MessageSquare,
@@ -188,21 +188,36 @@ const Interview = () => {
   const [activeSection, setActiveSection] = useState("technical");
   // Q1 starts expanded to mirror the reference design
   const [openQuestion, setOpenQuestion] = useState("tech-0");
-  const {report} = useInterview()
+  const {report, getReportById, loading} = useInterview()
+  // const { interviewId } = useParams()   // yeh hum isliye kr rhe h kyunki jb hum page reload kr rhe h toh phir error aa jaata h kyunki saara data chla jaata h, isliye hume ise rehydrate krna padega
 
+  if (loading) {
+  return <h1>Loading...</h1>;
+  }
+  if (!report) {
+    return <h1>No Report Found</h1>;
+  }
+  // useEffect(()=> {
+  //   if (interviewId) {
+  //     getReportById(interviewId)
+  //   }
+  // }, [interviewId])
   const toggleQuestion = (key) => {
     setOpenQuestion((prev) => (prev === key ? null : key));
   };
 
-  const matchInfo = getMatchInfo(report.matchScore);
+  // console.log(report);
+  // console.log(report?.matchScore);
+  const score = Number(report?.matchScore ?? 0);
+  const matchInfo = getMatchInfo(score);
   const gaugeRadius = 54;
   const gaugeCircumference = 2 * Math.PI * gaugeRadius;
   const gaugeOffset =
-    gaugeCircumference * (1 - report.matchScore / 100);
+    gaugeCircumference * (1 - score / 100);
 
   const renderQuestionList = (questions, prefix) => (
     <div className="questions-list">
-      {questions.map((q, index) => {
+      {questions?.map((q, index) => {
         const key = `${prefix}-${index}`;
         const isOpen = openQuestion === key;
 
@@ -238,12 +253,12 @@ const Interview = () => {
       <div className="content-header">
         <h2>Preparation Road Map</h2>
         <span className="count-badge">
-          {report.preparationPlan.length}-day plan
+          {report?.preparationPlan?.length}-day plan
         </span>
       </div>
 
       <div className="roadmap-timeline">
-        {report.preparationPlan.map((dayPlan) => (
+        {report?.preparationPlan?.map((dayPlan) => (
           <div className="roadmap-item" key={dayPlan.day}>
             <span className="roadmap-marker" />
 
@@ -297,10 +312,10 @@ const Interview = () => {
                 <div className="content-header">
                   <h2>Technical Questions</h2>
                   <span className="count-badge">
-                    {report.technicalQuestions.length} questions
+                    {report?.technicalQuestions?.length} questions
                   </span>
                 </div>
-                {renderQuestionList(report.technicalQuestions, "tech")}
+                {renderQuestionList(report?.technicalQuestions, "tech")}
               </>
             )}
 
@@ -309,10 +324,10 @@ const Interview = () => {
                 <div className="content-header">
                   <h2>Behavioral Questions</h2>
                   <span className="count-badge">
-                    {report.behaviouralQuestions.length} questions
+                    {report?.behaviouralQuestions?.length} questions
                   </span>
                 </div>
-                {renderQuestionList(report.behaviouralQuestions, "behavioral")}
+                {renderQuestionList(report?.behaviouralQuestions, "behavioral")}
               </>
             )}
 
@@ -339,7 +354,7 @@ const Interview = () => {
                 </svg>
 
                 <div className="gauge-label">
-                  <span className="gauge-value">{report.matchScore}</span>
+                  <span className="gauge-value">{report?.matchScore}</span>
                   <span className="gauge-percent">%</span>
                 </div>
               </div>
@@ -353,7 +368,7 @@ const Interview = () => {
               <h3 className="sidebar-title">Skill Gaps</h3>
 
               <div className="skill-list">
-                {report.skillGaps.map((gap) => (
+                {report?.skillGaps.map((gap) => (
                   <div
                     className={`skill-badge ${getSeverityClass(gap.severity)}`}
                     key={gap.skill}

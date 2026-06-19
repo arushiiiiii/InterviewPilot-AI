@@ -11,16 +11,23 @@ const Register = () => {
     
     const handleSubmit = async (e) => {
         e.preventDefault()
-        await handleRegister({username, email, password})
-        navigate("/")
+        try {
+          await handleRegister({username, email, password})
+          navigate("/")
+        } catch (err) {
+          alert(error.response?.data?.message || "Resgitration failed")
+        }
     }
   if (loading) {
     return (<main>Loading...</main>)
   }
   return (
-    <main>
-      <div>
-        <h1>Register👇🏻</h1>
+    <main className="auth-page">
+      <div className="auth-card">
+        <h1>Create Account</h1>
+        <p className="auth-subtitle">
+  Create an account to generate personalized interview plans
+</p>
 
         <form onSubmit={handleSubmit} className='form-container'>
           <div className="input-group">

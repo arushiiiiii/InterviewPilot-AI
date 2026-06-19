@@ -1,10 +1,13 @@
 import {useContext, useEffect} from 'react';
 import { InterviewContext } from '../interview.context';
 import { generateInterviewReport, getInterviewReportById, getAllInterviewReports } from '../services/interivew.api';
+import { useParams } from 'react-router';
+
 
 export const useInterview = () => {
     const context = useContext(InterviewContext);
-
+    const { interviewId } = useParams()   // yeh hum isliye kr rhe h kyunki jb hum page reload kr rhe h toh phir error aa jaata h kyunki saara data chla jaata h, isliye hume ise rehydrate krna padega
+ 
     if (!context) {
         throw new Error("useInterview must be used within an InterviewProvider")
     }
@@ -12,7 +15,6 @@ export const useInterview = () => {
 
     const generateReport = async ({ jobDescription, selfDescription, resumeFile }) => {
         setLoading(true)
-        let response = null
         try {
             const response = await generateInterviewReport({ jobDescription, selfDescription, resumeFile })
             setReport(response.interviewReport)
@@ -22,27 +24,28 @@ export const useInterview = () => {
         } finally {
             setLoading(false)
         }
-        return response?.interviewReport
     }
 
     const getReportById = async (interviewId) => {
         setLoading(true)
+        let response = null
         try{
-            const response = await getInterviewReportById(interviewId)
+            response = await getInterviewReportById(interviewId)
             setReport(response.interviewReport)
         } catch (err) {
             console.log(err)
         } finally {
             setLoading(false)
         }
+        return response?.interviewReport
     }
 
     const getReports = async () => {
         setLoading(true)
         let response = null
         try {
-            const response = await getAllInterviewReports()
-            setReport(response.interviewReport)
+            response = await getAllInterviewReports()
+            setReports(response.interviewReports)
         } catch (err) {
             console.log(err)
         } finally {
@@ -51,6 +54,13 @@ export const useInterview = () => {
         return response?.interviewReport
     }
 
+    useEffect(()=> {
+        if (interviewId) {
+          getReportById(interviewId)
+        } else {
+            getReports()
+        }
+      }, [interviewId])
     return { loading, report, reports, generateReport, getReportById, getReports }
 }
 

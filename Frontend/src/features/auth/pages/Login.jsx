@@ -14,8 +14,15 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    await handleLogin({email, password})
-    navigate("/")
+    try {
+        await handleLogin({ email, password });
+        navigate("/");
+    } catch (error) {
+        alert(
+            error.response?.data?.message ||
+            "Login failed"
+        );
+    }
   }
   if (loading) {
     return (<main>Loading...</main>)
@@ -23,9 +30,12 @@ const Login = () => {
 
 
   return (
-    <main>
-      <div>
-        <h1>Login👇🏻</h1>
+    <main className="auth-page">
+      <div className="auth-card">
+        <h1>Welcome Back</h1>
+        <p className="auth-subtitle">
+  Continue building your interview strategy
+</p>
 
         <form onSubmit={handleSubmit} className='form-container'>
             <div className="input-group">
