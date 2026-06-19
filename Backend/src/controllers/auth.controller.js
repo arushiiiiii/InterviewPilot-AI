@@ -42,7 +42,8 @@ async function registerUserController(req, res) {
     const options = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        path: "/"
     }
     res.cookie("token", token, options)
 
@@ -89,7 +90,8 @@ async function loginUserController(req, res) {
     const options = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        path: "/"
     }
     res.cookie("token", token, options)
 
@@ -117,7 +119,8 @@ async function logoutUserController(req, res) {
     res.clearCookie("token", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        path: "/"
     });
     res.status(200).json({
         message: "User logged out successfully!"
