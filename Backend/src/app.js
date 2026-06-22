@@ -9,10 +9,12 @@ app.use(cookieParser());
 
 app.use(express.json());
 app.use(cors({
-    origin: [
-        "http://localhost:5173",
-        "https://interviewpilot-frontend.vercel.app"
-    ],
+    origin: true,
+    // [
+    //     "http://localhost:5173",
+    //     "https://interviewpilot-frontend.vercel.app",
+    //     "https://interviewpilot-frontend-git-main-arushi1.vercel.app"
+    // ],
     credentials: true
 }))
 
