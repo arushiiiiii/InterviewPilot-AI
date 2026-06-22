@@ -8,6 +8,7 @@ import {
   Navigation,
   ChevronDown,
   ChevronUp,
+  FileText
 } from "lucide-react";
 
 // Left-nav sections
@@ -188,8 +189,21 @@ const Interview = () => {
   const [activeSection, setActiveSection] = useState("technical");
   // Q1 starts expanded to mirror the reference design
   const [openQuestion, setOpenQuestion] = useState("tech-0");
-  const {report, getReportById, loading} = useInterview()
-  // const { interviewId } = useParams()   // yeh hum isliye kr rhe h kyunki jb hum page reload kr rhe h toh phir error aa jaata h kyunki saara data chla jaata h, isliye hume ise rehydrate krna padega
+  const {report, getReportById, loading, getResumePdf} = useInterview()
+  const { interviewId } = useParams()   // yeh hum isliye kr rhe h kyunki jb hum page reload kr rhe h toh phir error aa jaata h kyunki saara data chla jaata h, isliye hume ise rehydrate krna padega
+
+  const [generatingResume, setGeneratingResume] = useState(false);
+  const handleGenerateResume = async () => {
+  try {
+    setGeneratingResume(true);
+    await getResumePdf(interviewId);
+  } catch (error) {
+    console.error("Failed to generate resume:", error);
+  } finally {
+    setGeneratingResume(false);
+  }
+};
+
 
   if (loading) {
   return <h1>Loading...</h1>;
@@ -335,6 +349,14 @@ const Interview = () => {
           </section>
 
           <aside className="insights-sidebar">
+            <button
+              className="generate-resume-btn"
+              onClick={handleGenerateResume}
+            >
+            <FileText size={18} />
+            <span>{generatingResume ? "Generating..." : "Generate Resume"}
+</span>
+           </button>
             <div className="insight-block">
               <h3 className="sidebar-title">Match Score</h3>
 

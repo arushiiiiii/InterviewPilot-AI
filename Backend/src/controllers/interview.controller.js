@@ -1,7 +1,6 @@
 const pdfParse = require("pdf-parse")
-const generateInterviewReport = require("../services/ai.service")
+const { generateInterviewReport, generateResumePdf } = require("../services/ai.service")
 const InterviewReport = require("../models/interviewReport.model")
-
 
 /**
  * @description Controller to generate interview report based on user self desription, resume and job description.
@@ -58,4 +57,30 @@ async function getAllInterviewReportsController(req, res) {
     })
 }
 
-module.exports = {generateInterviewReportController, getInterviewReportByIdController, getAllInterviewReportsController} 
+/**
+ * @description Controller to generate resume PDF based on user self description, resume and job description.
+ */
+async function generateResumePdfController(req, res) {
+    const { interviewReportId } = req.params
+
+    const interviewReport = await InterviewReport.findById(interviewReportId)
+
+    if (!interviewReport) {
+        return res.status(404).json({
+            message: "Interview Report not found."
+        })
+    }
+
+    const { resume, selfDescription, jobDescription } = interviewReport
+
+    const pdfBuffer = await generateResumePdf({ resume, selfDescription, jobDescription })
+
+    res.set({
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename=resume_${interviewReportId}.pdf`
+    })
+
+    res.send(pdfBuffer)
+}
+
+module.exports = { generateInterviewReportController, getInterviewReportByIdController, getAllInterviewReportsController, generateResumePdfController } 

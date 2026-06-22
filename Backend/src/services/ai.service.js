@@ -2,7 +2,7 @@ const { GoogleGenAI } = require("@google/genai");
 const { z } = require("zod");
 const { zodToJsonSchema } = require("zod-to-json-schema");
 const { resume, jobDescription, selfDescription } = require("./temp");
-
+const puppeteer = require("puppeteer")
 const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY
 })
@@ -245,4 +245,135 @@ QUALITY EXPECTATIONS:
     
 } 
 
-module.exports = generateInterviewReport
+
+async function generatePdfFromHtml(htmlContent) {
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage()
+  await page.setContent(htmlContent, { waitUntil: "networkidle0"});
+
+  const pdfBuffer = await page.pdf({ 
+    format: "A4",
+    printBackground: true,
+    margin: {
+      top: "10mm",
+      right: "10mm",
+      bottom: "10mm",
+      left: "10mm",
+    },
+   })
+  await browser.close()
+  return pdfBuffer
+}
+async function generateResumePdf({ resume, selfDescription, jobDescription }) {
+  const resumePdfSchema = z.object({
+    html: z.string().describe("Complete standalone HTML document including html, head, style and body tags.")
+  })
+
+  const prompt = `You are an expert ATS resume writer and professional resume designer.
+
+Your task is to generate a COMPLETE standalone HTML document for a one-page ATS-friendly resume.
+
+Candidate Information:
+
+Resume:
+${resume}
+
+Self Description:
+${selfDescription}
+
+Target Job Description:
+${jobDescription}
+
+Requirements:
+
+1. Return ONLY valid HTML.
+
+2. Generate a complete document containing:
+
+   * <!DOCTYPE html>
+   * html
+   * head
+   * style
+   * body
+
+3. The resume must fit on a single A4 page.
+
+4. Use modern professional styling.
+
+5. Optimize the resume specifically for the provided job description.
+
+6. Extract and emphasize the most relevant skills, projects, technologies, achievements and experiences that match the job description.
+
+7. Do NOT invent information that is not present in the candidate data.
+
+8. Prioritize ATS compatibility:
+
+   * Avoid tables.
+   * Avoid multi-column layouts that break ATS parsing.
+   * Use semantic headings.
+   * Use clean section structure.
+
+9. Resume sections should include:
+
+   * Name
+   * Contact Information
+   * Professional Summary
+   * Skills
+   * Education
+   * Experience (if available)
+   * Projects
+   * Achievements
+   * Certifications (if available)
+
+10. Use concise bullet points.
+
+11. Quantify achievements whenever information is available.
+
+12. Use only inline CSS inside a style tag.
+
+13. Ensure the HTML renders correctly in Chromium/Puppeteer.
+
+14. Use professional typography:
+
+* font-family: Arial, Helvetica, sans-serif;
+* font-size: 10-12px
+* clear section spacing
+
+15. Avoid excessive colors, icons, emojis, SVGs, images, external fonts, JavaScript and external assets.
+
+16. If content is too large, intelligently compress bullet points to ensure the resume remains one page.
+
+17. Make the resume highly relevant to the target job description and maximize ATS keyword alignment.
+
+18. Every skill, achievement, project, technology, certification,
+education detail and experience detail must originate from the
+candidate information provided. Never fabricate companies,
+employment history, dates, percentages, ranks or achievements.
+
+
+19. Perform keyword matching against the job description and naturally
+incorporate relevant keywords from the job description wherever
+supported by the candidate's actual background.
+
+
+Return a JSON object:
+{
+"html": "<complete html document>"
+}
+`
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: prompt,
+    config: {
+      temperature: 0.3, // for resume generation we want consistency and lower temperature = fewer weird formattion choices
+      responseMimeType: "application/json",
+      responseSchema: zodToJsonSchema(resumePdfSchema),
+    }
+  })
+  const jsonContent = JSON.parse(response.text)
+  const pdfBuffer = await generatePdfFromHtml(jsonContent.html)
+  return pdfBuffer
+}
+
+module.exports = { generateInterviewReport, generateResumePdf }

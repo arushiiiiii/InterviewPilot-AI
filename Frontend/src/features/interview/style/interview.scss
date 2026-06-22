@@ -415,6 +415,59 @@ $purple: #a78bfa;
 
     border-left: 1px solid $border;
   }
+  .generate-resume-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  width: 100%;
+
+  border: none;
+  outline: none;
+
+  background: linear-gradient(
+    135deg,
+    $pink,
+    #ff5ea8
+  );
+
+  color: white;
+
+  padding: 14px 18px;
+
+  border-radius: 14px;
+
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-family: inherit;
+
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+
+  box-shadow:
+    0 8px 20px rgba(255, 46, 136, 0.25);
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+      0 12px 28px rgba(255, 46, 136, 0.35);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+  &:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+}
 
   .score-gauge {
     position: relative;
