@@ -2,7 +2,8 @@ const { GoogleGenAI } = require("@google/genai");
 const { z } = require("zod");
 const { zodToJsonSchema } = require("zod-to-json-schema");
 const { resume, jobDescription, selfDescription } = require("./temp");
-const puppeteer = require("puppeteer")
+// const puppeteer = require("puppeteer-core");
+const chromium = require("@sparticuz/chromium").default;
 const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY
 })
@@ -228,26 +229,48 @@ QUALITY EXPECTATIONS:
 * Make recommendations that would genuinely improve the candidate's chances of success.
   `;
 
-    const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: prompt,
-        // config: {
-        //     responseMimeType: "application/json",
-        //     responseSchema: zodToJsonSchema(interviewReportSchema)
-        // },   Not working in this case
-    })
+    try {
+      const response = await ai.models.generateContent({
+          model: "gemini-2.5-flash",
+          contents: prompt,
+          // config: {
+          //     responseMimeType: "application/json",
+          //     responseSchema: zodToJsonSchema(interviewReportSchema)
+          // },   Not working in this case
+      })
+      const report = JSON.parse(response.text);
+      const validatedReport = interviewReportSchema.parse(report);
+      return validatedReport
+    } catch (error) {
+      console.error(error);
+      throw new Error("This model is currently experiencing high demand. Please try again in a few moments.")
+    }
 
-    const report = JSON.parse(response.text);
-    const validatedReport = interviewReportSchema.parse(report);
-    return validatedReport
     // console.log(validateReport);
     // return report
     
 } 
 
-
 async function generatePdfFromHtml(htmlContent) {
-  const browser = await puppeteer.launch();
+  
+  let browser;
+  if (process.env.NODE_ENV === "production") {
+    const puppeteerCore = require("puppeteer-core");
+
+    browser = await puppeteerCore.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: true,
+    });
+  } else {
+    const puppeteer = require("puppeteer");
+
+    browser = await puppeteer.launch({
+      headless: true,
+    });
+  }
+
   const page = await browser.newPage()
   await page.setContent(htmlContent, { waitUntil: "networkidle0"});
 
@@ -362,18 +385,30 @@ Return a JSON object:
 }
 `
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
-    config: {
-      temperature: 0.3, // for resume generation we want consistency and lower temperature = fewer weird formattion choices
-      responseMimeType: "application/json",
-      responseSchema: zodToJsonSchema(resumePdfSchema),
-    }
-  })
-  const jsonContent = JSON.parse(response.text)
-  const pdfBuffer = await generatePdfFromHtml(jsonContent.html)
-  return pdfBuffer
+  try {
+    // console.log("Step 1");
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: {
+        temperature: 0.3, // for resume generation we want consistency and lower temperature = fewer weird formattion choices
+        responseMimeType: "application/json",
+        responseSchema: zodToJsonSchema(resumePdfSchema),
+      }
+    })
+    // console.log("Step 2");
+    const jsonContent = JSON.parse(response.text)
+    // console.log("Step 3");
+    const pdfBuffer = await generatePdfFromHtml(jsonContent.html)
+    // console.log("Step 4");
+    return pdfBuffer
+  } catch (err) {
+    console.error("Resume err:", err);
+    throw err;
+    // throw new Error(
+    //   "Resume generation service is temporarily unavailable. Please try again in a few moments."
+    // )
+  }
 }
 
 module.exports = { generateInterviewReport, generateResumePdf }

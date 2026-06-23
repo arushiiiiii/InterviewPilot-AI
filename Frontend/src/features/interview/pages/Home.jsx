@@ -40,6 +40,11 @@ const Home = () => {
         selfDescription,
         resumeFile
     });
+    console.log("Generated data:", data)
+    if (!data?._id) {
+    alert("Failed to generate report");
+    return;
+}
     navigate(`/interview/${data._id}`)
   }
 
