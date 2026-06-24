@@ -243,7 +243,11 @@ QUALITY EXPECTATIONS:
       return validatedReport
     } catch (error) {
       console.error(error);
-      throw new Error("This model is currently experiencing high demand. Please try again in a few moments.")
+      if (err.status === 429) {
+        throw new Error(
+        "AI quota exceeded. Please try again later."
+      );
+    }
     }
 
     // console.log(validateReport);

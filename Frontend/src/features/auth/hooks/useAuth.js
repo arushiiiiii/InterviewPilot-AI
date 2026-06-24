@@ -48,8 +48,7 @@ export const useAuth = () => {
                 setUser(data.user)
             } catch (error) {
                 setUser(null);
-                throw error
-                alert( error.response?.data?.message || "Login failed");
+                // alert( error.response?.data?.message || "Login failed");
             } finally {
                 setLoading(false)
             }
