@@ -16,6 +16,40 @@ const ai = new GoogleGenAI({
 
 //     console.log(response.text)
 // }
+async function generateWithRetry(fn, retries = 3) {
+    let lastError;
+
+    for (let i = 0; i < retries; i++) {
+        try {
+            return await fn();
+        } catch (err) {
+            lastError = err;
+
+            const status = err.status || err?.error?.code;
+
+            // Retry only for temporary AI service issues
+            if (
+                status !== 503 &&
+                status !== 429 &&
+                i === retries - 1
+            ) {
+                throw err;
+            }
+
+            console.log(
+                `AI request failed (attempt ${i + 1}/${retries}):`,
+                err.message
+            );
+
+            await new Promise(resolve =>
+                setTimeout(resolve, 2000 * (i + 1))
+            );
+        }
+    }
+
+    throw lastError;
+}
+
 
 const interviewReportSchema = z.object({
     matchScore: z.number().min(0).max(100).describe("A score between 0 and 100 indicating how well the candidate's profile matches the job description"),
@@ -42,6 +76,7 @@ const interviewReportSchema = z.object({
     
 
 });
+
 async function generateInterviewReport({resume, selfDescription, jobDescription}) {
 
     const prompt = `
@@ -230,24 +265,33 @@ QUALITY EXPECTATIONS:
   `;
 
     try {
-      const response = await ai.models.generateContent({
+      const response = await generateWithRetry(() => ai.models.generateContent({
           model: "gemini-2.5-flash",
           contents: prompt,
           // config: {
           //     responseMimeType: "application/json",
           //     responseSchema: zodToJsonSchema(interviewReportSchema)
           // },   Not working in this case
-      })
+      }))
       const report = JSON.parse(response.text);
       const validatedReport = interviewReportSchema.parse(report);
       return validatedReport
     } catch (error) {
-      console.error(error);
-      if (err.status === 429) {
+      console.error("Interview Report Error:", error);
+      if (error.status === 429) {
         throw new Error(
         "AI quota exceeded. Please try again later."
       );
     }
+    if (error.status === 503) {
+        throw new Error(
+            "AI service is currently busy. Please try again in a few seconds."
+        );
+    }
+
+    throw new Error(
+        error.message || "Failed to generate interview report."
+    );
     }
 
     // console.log(validateReport);
@@ -391,7 +435,7 @@ Return a JSON object:
 
   try {
     // console.log("Step 1");
-    const response = await ai.models.generateContent({
+    const response = await generateWithRetry(()=>ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
       config: {
@@ -399,7 +443,7 @@ Return a JSON object:
         responseMimeType: "application/json",
         responseSchema: zodToJsonSchema(resumePdfSchema),
       }
-    })
+    }))
     // console.log("Step 2");
     const jsonContent = JSON.parse(response.text)
     // console.log("Step 3");
@@ -407,7 +451,20 @@ Return a JSON object:
     // console.log("Step 4");
     return pdfBuffer
   } catch (err) {
-    console.error("Resume err:", err);
+    console.error("Resume generation error:", err);
+
+    if (err.status === 429) {
+        throw new Error(
+            "AI quota exceeded. Please try again later."
+        );
+    }
+
+    if (err.status === 503) {
+        throw new Error(
+            "AI service is currently busy. Please try again in a few seconds."
+        );
+    }
+
     throw err;
     // throw new Error(
     //   "Resume generation service is temporarily unavailable. Please try again in a few moments."
