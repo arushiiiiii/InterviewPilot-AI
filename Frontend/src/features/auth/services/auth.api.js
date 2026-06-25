@@ -32,7 +32,7 @@ export async function login({email, password}){
 
 export async function logout(){
     try {
-        const response = await api.get("/api/auth/logout", {})
+        const response = await api.get("/api/auth/logout")
         return response.data;
     } catch (error) {
         console.log(error)
@@ -41,11 +41,13 @@ export async function logout(){
 }
 
 export async function getMe(){
-    try {
-        const response = await api.get("/api/auth/get-me")
-        return response.data;
-    } catch (error) {
+    const response = await api.get("/api/auth/get-me");
+    return response.data;
+    // try {
+    //     const response = await api.get("/api/auth/get-me")
+    //     return response.data;
+    // } catch (error) {
         // console.log(error)
-        throw error;
-    }
+        // throw error;
+    // }
 }

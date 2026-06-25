@@ -2,13 +2,15 @@ import React, { useState, useEffect } from "react";
 import "../style/interview.scss";
 import { useInterview } from "../hooks/useInterview";
 import { useNavigate, useParams } from "react-router";
+
 import {
   Code2,
   MessageSquare,
   Navigation,
   ChevronDown,
   ChevronUp,
-  FileText
+  FileText,
+  ArrowLeft
 } from "lucide-react";
 
 // Left-nav sections
@@ -185,6 +187,7 @@ const getMatchInfo = (score) => {
 };
 
 const Interview = () => {
+  const navigate = useNavigate();
   // const [report] = useState(mockReport);
   const [activeSection, setActiveSection] = useState("technical");
   // Q1 starts expanded to mirror the reference design
@@ -295,7 +298,11 @@ const Interview = () => {
   );
 
   return (
+    
     <main className="interview">
+      <button className="back-btn" onClick={() => navigate("/")}>
+        <ArrowLeft size={17} />
+      </button>
       <div className="container">
         <div className="interview-layout">
           <aside className="sections-sidebar">

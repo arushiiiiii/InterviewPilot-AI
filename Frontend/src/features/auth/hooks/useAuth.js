@@ -12,6 +12,7 @@ export const useAuth = () => {
             setUser(data.user);
         } catch (error) {
             setUser(null);
+            alert(error.response?.data?.message || "Login failed");
         } finally {
             setLoading(false);
         }
@@ -24,18 +25,19 @@ export const useAuth = () => {
             setUser(data.user);
         } catch (error) {
             setUser(null);
+            alert(error.response?.data?.message || "Registration failed");
         } finally {
             setLoading(false);
         }
     }
 
     const handleLogout = async () => {
-        setLoading(true);
+        // setLoading(true);
         try {
-            const data = await logout() 
+            await logout() 
             setUser(null);
         } catch (error) {
-
+            console.error(error);
         } finally {
             setLoading(false);
         }
@@ -47,8 +49,10 @@ export const useAuth = () => {
                 const data = await getMe()
                 setUser(data.user)
             } catch (error) {
+                if (error.response?.status !== 401) {
+                   console.error(error);
+                }
                 setUser(null);
-                // alert( error.response?.data?.message || "Login failed");
             } finally {
                 setLoading(false)
             }

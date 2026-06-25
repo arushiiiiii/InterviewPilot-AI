@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import "../style/home.scss";
 import { useInterview } from "../hooks/useInterview";
 import { useNavigate } from "react-router";
+import Navbar from "../components/Navbar";
 
 import {
   FileText,
@@ -50,6 +51,7 @@ const Home = () => {
 
   return (
     <main className="home">
+      <Navbar />
       <div className="container">
 
         <div className="header">

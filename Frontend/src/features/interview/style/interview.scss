@@ -596,6 +596,35 @@ $purple: #a78bfa;
       color: $green;
     }
   }
+  .back-btn {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 8px 12px;
+
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+
+  background: rgba(17,24,39,.85);
+  backdrop-filter: blur(16px);
+
+  color: white;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: .2s;
+
+  &:hover {
+    border-color: #ff2e88;
+    background: rgba(255,46,136,.12);
+    transform: translateY(-2px);
+  }
+}
 
   // ---------- Responsive ----------
 
@@ -629,6 +658,7 @@ $purple: #a78bfa;
     }
   }
 
+
   @media (max-width: 640px) {
     .main-content {
       padding: 22px 18px;
@@ -640,6 +670,11 @@ $purple: #a78bfa;
 
     .insights-sidebar {
       flex-direction: column;
+    }
+    .back-btn {
+      top: 8px;
+      left: 10px;
+      padding: 4px 8px;
     }
   }
 }
