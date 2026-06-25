@@ -208,9 +208,9 @@ const Interview = () => {
 };
 
 
-  if (loading) {
-  return <h1>Loading...</h1>;
-  }
+  // if (loading) {
+  // return <h1>Loading...</h1>;
+  // }
   if (!report) {
     return <h1>No Report Found</h1>;
   }
@@ -359,10 +359,11 @@ const Interview = () => {
             <button
               className="generate-resume-btn"
               onClick={handleGenerateResume}
+              disabled={loading}
             >
             <FileText size={18} />
-            <span>{generatingResume ? "Generating..." : "Generate Resume"}
-</span>
+            {loading? "Generating...": "Generate Resume"}
+            {/* {generatingResume ? "Generating..." : "Generate Resume"} */}
            </button>
             <div className="insight-block">
               <h3 className="sidebar-title">Match Score</h3>
