@@ -52,18 +52,17 @@ InterviewPilot is a full-stack AI-powered interview preparation platform that he
 
 ### Login Page
 
+![Login](screenshots/login.png)
 
 ### Home Page
 
-<img src="screenshots/home.png" width="900"/>
+![Home](screenshots/home.png)
 
 ### Generated Interview Report
 
-<img src="screenshots/report.png" width="900"/>
+![Interview Report](screenshots/report1.png)
 
-### Resume Generator
-
-<img src="screenshots/resume.png" width="900"/>
+![Interview Report](screenshots/report2.png)
 
 ---
 
